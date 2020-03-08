@@ -1,6 +1,8 @@
-This repository is dormant and no longer maintained. It was developed aganst an openhab2 beta version and does no longer work
+# iRobot binding
 
-# roohab
-openhab2 roomba binding
+This binding provides for integration of products by iRobot company (http://www.irobot.com/). It is currently developed to support Roomba 900
+series robotic vacuum cleaner with built-in Wi-Fi module.
 
-The current implementation only works with a special addon which acts as a wlan bridge and is not longer available. I experimented with building a bridge of my one with an ESP wlan chip but i never got around finishing this.
+The development starts with an abandoned draft by hkunh42 (http://github.com/hkuhn42/openhab2.roomba) and will heavily use
+Roomba980-Python project by Nick Waterton (http://github.com/NickWaterton/Roomba980-Python) as a reference. The goal is to
+implement a binding that interfaces directly to the robot without a need for a dedicated MQTT server.
