@@ -9,8 +9,15 @@
     <version>2.5.1-SNAPSHOT</version>
   </parent>
 
-
   <artifactId>org.openhab.binding.irobot</artifactId>
   <name>openHAB Add-ons :: Bundles :: iRobot Binding</name>
+
+  <dependencies>
+    <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>20180130</version>
+    </dependency>
+  </dependencies>
 
 </project>
