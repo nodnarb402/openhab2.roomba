@@ -4,8 +4,8 @@
         xmlns:binding="http://eclipse.org/smarthome/schemas/binding/v1.0.0"
         xsi:schemaLocation="http://eclipse.org/smarthome/schemas/binding/v1.0.0 http://eclipse.org/smarthome/schemas/binding-1.0.0.xsd">
 
-    <name>Vacuum Binding</name>
-    <description>This is the binding for Vacuum Robots (iRobot Roomba).</description>
+    <name>IRobot Binding</name>
+    <description>This is the binding for iRobot robots.</description>
     <author>hkuhn42</author>
 
 </binding:binding>

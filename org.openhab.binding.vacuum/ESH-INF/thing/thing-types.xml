@@ -5,9 +5,9 @@
         xsi:schemaLocation="http://eclipse.org/smarthome/schemas/thing-description/v1.0.0 http://eclipse.org/smarthome/schemas/thing-description-1.0.0.xsd">
 
     <!-- Sample Thing Type -->
-	<thing-type id="vacuum">
-		<label>Vacuum</label>
-		<description>A vacuum robot</description>
+	<thing-type id="roomba">
+		<label>Roomba</label>
+		<description>A Roomba vacuum robot</description>
 
 		<channels>
 			<channel id="dock" typeId="dock" />

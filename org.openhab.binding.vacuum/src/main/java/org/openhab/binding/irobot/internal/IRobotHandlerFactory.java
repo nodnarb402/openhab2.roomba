@@ -5,14 +5,12 @@
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  */
-package org.openhab.binding.vacuum.internal;
+package org.openhab.binding.irobot.internal;
 
-import static org.openhab.binding.vacuum.VacuumBindingConstants.*;
+import static org.openhab.binding.irobot.IRobotBindingConstants.*;
 
 import java.util.Collections;
 import java.util.Set;
-
-import org.openhab.binding.vacuum.handler.VacuumHandler;
 
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.Bridge;
@@ -21,16 +19,17 @@ import org.eclipse.smarthome.core.thing.ThingTypeUID;
 import org.eclipse.smarthome.core.thing.ThingUID;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandlerFactory;
 import org.eclipse.smarthome.core.thing.binding.ThingHandler;
+import org.openhab.binding.irobot.handler.RoombaHandler;
 
 /**
- * The {@link VacuumHandlerFactory} is responsible for creating things and thing 
+ * The {@link IRobotHandlerFactory} is responsible for creating things and thing 
  * handlers.
  * 
  * @author hkuhn42 - Initial contribution
  */
-public class VacuumHandlerFactory extends BaseThingHandlerFactory {
+public class IRobotHandlerFactory extends BaseThingHandlerFactory {
     
-    private final static Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.singleton(THING_TYPE_VACUUM);
+    private final static Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.singleton(THING_TYPE_ROOMBA);
     
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -42,8 +41,8 @@ public class VacuumHandlerFactory extends BaseThingHandlerFactory {
 
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
 
-        if (thingTypeUID.equals(THING_TYPE_VACUUM)) {
-            return new VacuumHandler(thing);
+        if (thingTypeUID.equals(THING_TYPE_ROOMBA)) {
+            return new RoombaHandler(thing);
         }
 
         return null;

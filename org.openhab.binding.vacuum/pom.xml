@@ -10,7 +10,7 @@
   </parent>
 
 
-  <artifactId>org.openhab.binding.vacuum</artifactId>
+  <artifactId>org.openhab.binding.irobot</artifactId>
   <name>openHAB Add-ons :: Bundles :: iRobot Binding</name>
 
 </project>

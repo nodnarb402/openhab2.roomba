@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.openhab.binding.vacuum.roomba;
+package org.openhab.binding.irobot.roomba;
 
 /**
  * @author hkuhn
