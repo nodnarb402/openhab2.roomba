@@ -15,7 +15,12 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+// A "raw MQTT" client for sending custom "get password" request.
+// Seems pretty much reinventing a bicycle, but it looks like built-in OpenHAB MQTT
+// library doesn't provide for sending and receiving custom packets.
 public class RawMQTT {
+    public static final int ROOMBA_MQTT_PORT = 8883;
+
     private Socket socket;
 
     public static class Packet {
@@ -67,6 +72,7 @@ public class RawMQTT {
 
     }
 
+    // Roomba MQTT is using SSL with custom root CA certificate.
     private static class MQTTTrustManager implements X509TrustManager {
         @Override
         public X509Certificate[] getAcceptedIssuers() {
@@ -89,11 +95,15 @@ public class RawMQTT {
         }
     }
 
+    public static TrustManager[] getTrustManagers() {
+        return new TrustManager[] { new MQTTTrustManager() };
+    }
+
     public RawMQTT(InetAddress host, int port) throws KeyManagementException, NoSuchAlgorithmException, IOException {
         SSLContext sc = SSLContext.getInstance("SSL");
 
-        sc.init(null, new TrustManager[] { new MQTTTrustManager() }, new java.security.SecureRandom());
-        socket = sc.getSocketFactory().createSocket(host, 8883);
+        sc.init(null, getTrustManagers(), new java.security.SecureRandom());
+        socket = sc.getSocketFactory().createSocket(host, ROOMBA_MQTT_PORT);
     }
 
     public void close() throws IOException {

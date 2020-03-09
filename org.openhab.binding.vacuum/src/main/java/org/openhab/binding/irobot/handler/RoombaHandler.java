@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -29,6 +30,9 @@ import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.io.transport.mqtt.MqttBrokerConnection;
+import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionObserver;
+import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionState;
 import org.json.JSONException;
 import org.openhab.binding.irobot.internal.IdentProtocol;
 import org.openhab.binding.irobot.internal.IdentProtocol.IdentData;
@@ -43,7 +47,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author hkuhn42 - Initial contribution
  */
-public class RoombaHandler extends BaseThingHandler {
+public class RoombaHandler extends BaseThingHandler implements MqttConnectionObserver {
 
     private static final byte[] passwdRequest = { (byte) 0xf0, 0x05, (byte) 0xef, (byte) 0xcc, 0x3b, 0x29, 0x00 };
     private final Logger logger = LoggerFactory.getLogger(RoombaHandler.class);
@@ -51,6 +55,7 @@ public class RoombaHandler extends BaseThingHandler {
     private @Nullable Future<?> reconnectReq;
     private RoombaConfiguration config;
     private String blid = null;
+    protected MqttBrokerConnection connection;
 
     public RoombaHandler(Thing thing) {
         super(thing);
@@ -168,6 +173,21 @@ public class RoombaHandler extends BaseThingHandler {
 
                 logger.debug("Password is: " + config.password);
 
+                // BLID is used as both client ID and username. The name of BLID also came from Roomba980-python
+                connection = new MqttBrokerConnection(config.ipaddress, RawMQTT.ROOMBA_MQTT_PORT, true, blid);
+                connection.setCredentials(blid, config.password);
+                connection.setTrustManagers(RawMQTT.getTrustManagers());
+                connection.start().exceptionally(e -> {
+                    connectionStateChanged(MqttConnectionState.DISCONNECTED, e);
+                    return false;
+                }).thenAccept(v -> {
+                    if (!v) {
+                        connectionStateChanged(MqttConnectionState.DISCONNECTED, new TimeoutException("Timeout"));
+                    } else {
+                        connectionStateChanged(MqttConnectionState.CONNECTED, null);
+                    }
+                });
+
             } catch (UnknownHostException e) {
                 error = e.toString();
             } catch (IOException e) {
@@ -186,5 +206,20 @@ public class RoombaHandler extends BaseThingHandler {
         reconnectReq = scheduler.schedule(() -> {
             connect();
         }, 5, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void connectionStateChanged(MqttConnectionState state, @Nullable Throwable error) {
+        if (state == MqttConnectionState.CONNECTED) {
+            updateStatus(ThingStatus.ONLINE);
+            // channelStateByChannelUID.values().forEach(c -> c.start());
+        } else {
+            // channelStateByChannelUID.values().forEach(c -> c.stop());
+            if (error == null) {
+                updateStatus(ThingStatus.OFFLINE);
+            } else {
+                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, error.getMessage());
+            }
+        }
     }
 }
