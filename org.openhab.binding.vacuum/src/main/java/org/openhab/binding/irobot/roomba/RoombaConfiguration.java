@@ -6,4 +6,8 @@ public class RoombaConfiguration {
 
     public String ipaddress;
     public String password;
+
+    public boolean havePassword() {
+        return !(password == null || password.isEmpty());
+    }
 }
