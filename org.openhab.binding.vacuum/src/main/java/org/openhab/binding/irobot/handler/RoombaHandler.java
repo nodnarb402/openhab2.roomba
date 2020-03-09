@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
@@ -149,6 +150,12 @@ public class RoombaHandler extends BaseThingHandler {
                         RawMQTT.PasswdPacket passwdPacket = new RawMQTT.PasswdPacket(response);
 
                         config.password = passwdPacket.getPassword();
+                        if (config.havePassword()) {
+                            Configuration configuration = editConfiguration();
+
+                            configuration.put(RoombaConfiguration.FIELD_PASSWORD, config.password);
+                            updateConfiguration(configuration);
+                        }
                     }
                 }
 
