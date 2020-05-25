@@ -53,7 +53,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RoombaHandler extends BaseThingHandler implements MqttConnectionObserver, MqttMessageSubscriber {
 
-    private static final byte[] passwdRequest = { (byte) 0xf0, 0x05, (byte) 0xef, (byte) 0xcc, 0x3b, 0x29, 0x00 };
     private final Logger logger = LoggerFactory.getLogger(RoombaHandler.class);
     private final ExecutorService singleThread = Executors.newSingleThreadExecutor();
     private @Nullable Future<?> reconnectReq;
