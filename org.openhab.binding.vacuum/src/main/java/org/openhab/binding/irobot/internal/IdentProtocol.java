@@ -85,6 +85,7 @@ public class IdentProtocol {
             JSONObject irobotInfo = new JSONObject(reply);
 
             ver = irobotInfo.getInt("ver");
+            robotname = irobotInfo.getString("robotname");
 
             String[] hostname = irobotInfo.getString("hostname").split("-");
 
