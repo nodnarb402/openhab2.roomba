@@ -36,6 +36,7 @@ import org.eclipse.smarthome.io.transport.mqtt.MqttBrokerConnection;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionObserver;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionState;
 import org.eclipse.smarthome.io.transport.mqtt.MqttMessageSubscriber;
+import org.eclipse.smarthome.io.transport.mqtt.reconnect.PeriodicReconnectStrategy;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openhab.binding.irobot.internal.IdentProtocol;
@@ -55,6 +56,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
 
     private final Logger logger = LoggerFactory.getLogger(RoombaHandler.class);
     private final ExecutorService singleThread = Executors.newSingleThreadExecutor();
+    private static final int reconnectDelay = 5; // In seconds
     private @Nullable Future<?> reconnectReq;
     private RoombaConfiguration config;
     private String blid = null;
@@ -82,7 +84,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
             }
 
             if (connection != null) {
-                connection.unsubscribeAll();
+                connection.stop();
                 connection = null;
             }
         });
@@ -187,6 +189,10 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
                 connection = new MqttBrokerConnection(config.ipaddress, RawMQTT.ROOMBA_MQTT_PORT, true, blid);
                 connection.setCredentials(blid, config.password);
                 connection.setTrustManagers(RawMQTT.getTrustManagers());
+                // MQTT connection reconnects itself, so we don't have to call scheduleReconnect()
+                // when it breaks. Just set the period in ms.
+                connection.setReconnectStrategy(
+                        new PeriodicReconnectStrategy(reconnectDelay * 1000, reconnectDelay * 1000));
                 connection.start().exceptionally(e -> {
                     connectionStateChanged(MqttConnectionState.DISCONNECTED, e);
                     return false;
@@ -215,7 +221,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
     private void scheduleReconnect() {
         reconnectReq = scheduler.schedule(() -> {
             connect();
-        }, 5, TimeUnit.SECONDS);
+        }, reconnectDelay, TimeUnit.SECONDS);
     }
 
     @Override
