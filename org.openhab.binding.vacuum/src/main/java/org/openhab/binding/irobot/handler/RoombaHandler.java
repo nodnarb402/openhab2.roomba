@@ -80,6 +80,11 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
                 reconnectReq.cancel(false);
                 reconnectReq = null;
             }
+
+            if (connection != null) {
+                connection.unsubscribeAll();
+                connection = null;
+            }
         });
     }
 
