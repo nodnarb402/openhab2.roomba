@@ -10,9 +10,10 @@
 		<description>A Roomba vacuum robot</description>
 
 		<channels>
-			<channel id="dock" typeId="dock" />
-			<channel id="spot" typeId="spot" />
-			<channel id="clean" typeId="clean" />
+            <channel id="cycle" typeId="cycle" />
+			<channel id="phase" typeId="phase" />
+			<channel id="rssi" typeId="rssi" />
+			<channel id="snr" typeId="snr" />
 		</channels>
 		<config-description>
 			<parameter name="ipaddress" type="text">
@@ -28,28 +29,52 @@
 		</config-description>
 	</thing-type>
 	
-	<channel-type id="dock">
-        <item-type>Switch</item-type>
-        <label>Dock</label>
-        <description>Let robot return to dock</description>
-        <category>PowerOutlet</category>
-		<state readOnly="false"/>
+    <channel-type id="cycle">
+        <item-type>String</item-type>
+        <label>Mission</label>
+        <description>Current mission</description>
+        <state readOnly="true">
+            <options>
+                <option value="none">None</option>
+                <option value="clean">Clean</option>
+            </options>
+        </state>
     </channel-type>
-
-	<channel-type id="spot">
-        <item-type>Switch</item-type>
-        <label>Spot</label>
-        <description>Start spot cleaning mode</description>
-        <category>PowerOutlet</category>
-		<state readOnly="false"/>
+    <channel-type id="phase">
+        <item-type>String</item-type>
+        <label>State</label>
+        <description>Current state</description>
+        <state readOnly="true">
+            <options>
+                <option value="charge">Charging</option>
+                <option value="new">New Mission</option>
+                <option value="run">Running</option>
+                <option value="resume">Resumed</option>
+                <option value="hmMidMsn">Recharging</option>
+                <option value="recharge">Recharging</option>
+                <option value="stuck">Stuck</option>
+                <option value="hmUsrDock">User Docking</option>
+                <option value="dock">Docking</option>
+                <option value="dockend">Docking - End Mission</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="stop">Stopped</option>
+                <option value="pause">Paused</option>
+                <option value="hmPostMsn">End Mission</option>
+                <option value="">None</option>
+            </options>
+        </state>
     </channel-type>
-    
-    <channel-type id="clean">
-        <item-type>Switch</item-type>
-        <label>Clean</label>
-        <description>Start regular cleaning</description>
-        <category>PowerOutlet</category>
-		<state readOnly="false"/>
+    <channel-type id="rssi">
+    	<item-type>Number</item-type>
+    	<label>RSSI</label>
+    	<description>Wi-Fi signal strength</description>
+    	<state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="snr">
+        <item-type>Number</item-type>
+        <label>SNR</label>
+        <description>Wi-Fi signal to noise ratio</description>
+        <state readOnly="true"></state>
     </channel-type>
 
 </thing:thing-descriptions>

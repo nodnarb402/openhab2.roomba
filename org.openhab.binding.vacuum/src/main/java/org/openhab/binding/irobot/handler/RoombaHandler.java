@@ -24,6 +24,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.Configuration;
+import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
 import org.eclipse.smarthome.core.thing.ThingStatus;
@@ -33,7 +35,9 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.io.transport.mqtt.MqttBrokerConnection;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionObserver;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionState;
+import org.eclipse.smarthome.io.transport.mqtt.MqttMessageSubscriber;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.openhab.binding.irobot.internal.IdentProtocol;
 import org.openhab.binding.irobot.internal.IdentProtocol.IdentData;
 import org.openhab.binding.irobot.internal.RawMQTT;
@@ -47,7 +51,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author hkuhn42 - Initial contribution
  */
-public class RoombaHandler extends BaseThingHandler implements MqttConnectionObserver {
+public class RoombaHandler extends BaseThingHandler implements MqttConnectionObserver, MqttMessageSubscriber {
 
     private static final byte[] passwdRequest = { (byte) 0xf0, 0x05, (byte) 0xef, (byte) 0xcc, 0x3b, 0x29, 0x00 };
     private final Logger logger = LoggerFactory.getLogger(RoombaHandler.class);
@@ -82,15 +86,17 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
-        if (channelUID.getId().equals(CLEAN)) {
-
-        }
-        if (channelUID.getId().equals(DOCK)) {
-
-        }
-        if (channelUID.getId().equals(SPOT)) {
-
-        }
+        /*
+         * if (channelUID.getId().equals(CLEAN)) {
+         *
+         * }
+         * if (channelUID.getId().equals(DOCK)) {
+         *
+         * }
+         * if (channelUID.getId().equals(SPOT)) {
+         *
+         * }
+         */
     }
 
     private void connect() {
@@ -211,15 +217,77 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
     @Override
     public void connectionStateChanged(MqttConnectionState state, @Nullable Throwable error) {
         if (state == MqttConnectionState.CONNECTED) {
+            logger.debug("Connection established");
             updateStatus(ThingStatus.ONLINE);
-            // channelStateByChannelUID.values().forEach(c -> c.start());
+
+            // Roomba sends us two topics:
+            // "wifistat" - reports singnal strength and current robot position
+            // "$aws/things/<BLID>/shadow/update" - the rest of messages
+            // Subscribe to everything since we're interested in both
+            connection.subscribe("#", this).exceptionally(e -> {
+                logger.error("Subscription failed: " + e.getMessage());
+                return false;
+            }).thenAccept(v -> {
+                if (!v) {
+                    logger.error("Subscription timeout");
+                } else {
+                    logger.trace("Subscription done");
+                }
+            });
+
         } else {
             // channelStateByChannelUID.values().forEach(c -> c.stop());
-            if (error == null) {
-                updateStatus(ThingStatus.OFFLINE);
+            String message;
+
+            if (error != null) {
+                message = error.getMessage();
+                logger.error("MQTT connection failed: " + message);
             } else {
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, error.getMessage());
+                message = null;
+                logger.error("MQTT connection failed for unspecified reason");
             }
+
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, message);
+        }
+    }
+
+    @Override
+    public void processMessage(String topic, byte[] payload) {
+        String jsonStr = new String(payload);
+        logger.debug("Got topic {} data {}", topic, jsonStr);
+
+        try {
+            // Data comes as JSON string: {"state":{"reported":<Actual content here>}}
+            // or: {"state":{"desired":<Some content here>}}
+            // Of the second form i've so far observed only: {"state":{"desired":{"echo":null}}}
+            // I don't know what it is, so let's ignore it.
+            // Examples of the first form are given below, near the respective parsing code
+            JSONObject state = new JSONObject(jsonStr).getJSONObject("state");
+
+            if (!state.has("reported")) {
+                return;
+            }
+
+            JSONObject reported = state.getJSONObject("reported");
+
+            if (reported.has("cleanMissionStatus")) {
+                // {"cleanMissionStatus":{"cycle":"clean","phase":"hmUsrDock","expireM":0,"rechrgM":0,"error":0,"notReady":0,"mssnM":1,"sqft":7,"initiator":"rmtApp","nMssn":39}}
+                JSONObject missionStatus = reported.getJSONObject("cleanMissionStatus");
+
+                updateState(CHANNEL_CYCLE, StringType.valueOf(missionStatus.getString("cycle")));
+                updateState(CHANNEL_PHASE, StringType.valueOf(missionStatus.getString("phase")));
+            }
+
+            if (reported.has("signal")) {
+                // {"signal":{"rssi":-55,"snr":33}}
+                JSONObject signal = reported.getJSONObject("signal");
+
+                updateState(CHANNEL_RSSI, new DecimalType(signal.getInt("rssi")));
+                updateState(CHANNEL_SNR, new DecimalType(signal.getInt("snr")));
+            }
+        } catch (JSONException e) {
+            logger.error("Failed to parse JSON message from {}: {}", config.ipaddress, e);
+            logger.error("Raw contents: {}", payload);
         }
     }
 }
