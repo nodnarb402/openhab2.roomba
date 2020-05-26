@@ -53,7 +53,7 @@
                 <option value="hmMidMsn">Recharging</option>
                 <option value="recharge">Recharging</option>
                 <option value="stuck">Stuck</option>
-                <option value="hmUsrDock">User Docking</option>
+                <option value="hmUsrDock">Going home</option>
                 <option value="dock">Docking</option>
                 <option value="dockend">Docking - End Mission</option>
                 <option value="cancelled">Cancelled</option>
