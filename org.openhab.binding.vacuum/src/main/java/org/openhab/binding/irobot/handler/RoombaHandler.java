@@ -16,6 +16,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Hashtable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -32,6 +33,8 @@ import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
+import org.eclipse.smarthome.core.types.RefreshType;
+import org.eclipse.smarthome.core.types.State;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionObserver;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionState;
 import org.eclipse.smarthome.io.transport.mqtt.MqttMessageSubscriber;
@@ -61,6 +64,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
     private RoombaConfiguration config;
     private String blid = null;
     protected RoombaMqttBrokerConnection connection;
+    private Hashtable<String, State> lastState = new Hashtable<String, State>();
 
     public RoombaHandler(Thing thing) {
         super(thing);
@@ -92,6 +96,14 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
 
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
+        String ch = channelUID.getId();
+        if (command instanceof RefreshType) {
+            State value = lastState.get(ch);
+
+            if (value != null) {
+                updateState(ch, value);
+            }
+        }
         /*
          * if (channelUID.getId().equals(CLEAN)) {
          *
@@ -284,20 +296,34 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
                 // {"cleanMissionStatus":{"cycle":"clean","phase":"hmUsrDock","expireM":0,"rechrgM":0,"error":0,"notReady":0,"mssnM":1,"sqft":7,"initiator":"rmtApp","nMssn":39}}
                 JSONObject missionStatus = reported.getJSONObject("cleanMissionStatus");
 
-                updateState(CHANNEL_CYCLE, StringType.valueOf(missionStatus.getString("cycle")));
-                updateState(CHANNEL_PHASE, StringType.valueOf(missionStatus.getString("phase")));
+                reportString(CHANNEL_CYCLE, missionStatus, "cycle");
+                reportString(CHANNEL_PHASE, missionStatus, "phase");
             }
 
             if (reported.has("signal")) {
                 // {"signal":{"rssi":-55,"snr":33}}
                 JSONObject signal = reported.getJSONObject("signal");
 
-                updateState(CHANNEL_RSSI, new DecimalType(signal.getInt("rssi")));
-                updateState(CHANNEL_SNR, new DecimalType(signal.getInt("snr")));
+                reportInt(CHANNEL_RSSI, signal, "rssi");
+                reportInt(CHANNEL_SNR, signal, "snr");
             }
         } catch (JSONException e) {
             logger.error("Failed to parse JSON message from {}: {}", config.ipaddress, e);
             logger.error("Raw contents: {}", payload);
         }
+    }
+
+    private void reportString(String channel, JSONObject container, String attr) {
+        StringType value = StringType.valueOf(container.getString(attr));
+
+        lastState.put(channel, value);
+        updateState(channel, value);
+    }
+
+    private void reportInt(String channel, JSONObject container, String attr) {
+        DecimalType value = new DecimalType(container.getInt(attr));
+
+        lastState.put(channel, value);
+        updateState(channel, value);
     }
 }
