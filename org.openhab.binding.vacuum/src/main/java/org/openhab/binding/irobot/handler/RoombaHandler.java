@@ -32,7 +32,6 @@ import org.eclipse.smarthome.core.thing.ThingStatus;
 import org.eclipse.smarthome.core.thing.ThingStatusDetail;
 import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
-import org.eclipse.smarthome.io.transport.mqtt.MqttBrokerConnection;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionObserver;
 import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionState;
 import org.eclipse.smarthome.io.transport.mqtt.MqttMessageSubscriber;
@@ -43,6 +42,7 @@ import org.openhab.binding.irobot.internal.IdentProtocol;
 import org.openhab.binding.irobot.internal.IdentProtocol.IdentData;
 import org.openhab.binding.irobot.internal.RawMQTT;
 import org.openhab.binding.irobot.roomba.RoombaConfiguration;
+import org.openhab.binding.irobot.roomba.RoombaMqttBrokerConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +60,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
     private @Nullable Future<?> reconnectReq;
     private RoombaConfiguration config;
     private String blid = null;
-    protected MqttBrokerConnection connection;
+    protected RoombaMqttBrokerConnection connection;
 
     public RoombaHandler(Thing thing) {
         super(thing);
@@ -84,7 +84,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
             }
 
             if (connection != null) {
-                connection.stop();
+                connection.forceStop();
                 connection = null;
             }
         });
@@ -186,7 +186,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
                 logger.debug("Password is: " + config.password);
 
                 // BLID is used as both client ID and username. The name of BLID also came from Roomba980-python
-                connection = new MqttBrokerConnection(config.ipaddress, RawMQTT.ROOMBA_MQTT_PORT, true, blid);
+                connection = new RoombaMqttBrokerConnection(config.ipaddress, blid);
                 connection.setCredentials(blid, config.password);
                 connection.setTrustManagers(RawMQTT.getTrustManagers());
                 // MQTT connection reconnects itself, so we don't have to call scheduleReconnect()
