@@ -23,6 +23,7 @@ public class IRobotBindingConstants {
     public final static ThingTypeUID THING_TYPE_ROOMBA = new ThingTypeUID(BINDING_ID, "roomba");
 
     // List of all Channel ids
+    public final static String CHANNEL_COMMAND = "command";
     public final static String CHANNEL_CYCLE = "cycle";
     public final static String CHANNEL_PHASE = "phase";
     public final static String CHANNEL_RSSI = "rssi";

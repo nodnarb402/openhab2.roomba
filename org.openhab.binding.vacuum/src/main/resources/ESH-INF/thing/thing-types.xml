@@ -10,6 +10,7 @@
 		<description>A Roomba vacuum robot</description>
 
 		<channels>
+		    <channel id="command" typeId="command" />
             <channel id="cycle" typeId="cycle" />
 			<channel id="phase" typeId="phase" />
 			<channel id="rssi" typeId="rssi" />
@@ -29,6 +30,20 @@
 		</config-description>
 	</thing-type>
 	
+    <channel-type id="command">
+        <item-type>String</item-type>
+        <label>Command</label>
+        <description>Command to execute</description>
+        <state>
+            <options>
+                <option value="start">Start</option>
+                <option value="pause">Pause</option>
+                <option value="resume">Resume</option>
+                <option value="dock">Dock</option>
+                <option value="stop">Stop</option>
+            </options>
+        </state>
+    </channel-type>
     <channel-type id="cycle">
         <item-type>String</item-type>
         <label>Mission</label>

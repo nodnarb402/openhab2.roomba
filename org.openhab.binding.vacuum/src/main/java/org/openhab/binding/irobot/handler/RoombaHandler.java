@@ -103,18 +103,22 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
             if (value != null) {
                 updateState(ch, value);
             }
+
+            return;
         }
-        /*
-         * if (channelUID.getId().equals(CLEAN)) {
-         *
-         * }
-         * if (channelUID.getId().equals(DOCK)) {
-         *
-         * }
-         * if (channelUID.getId().equals(SPOT)) {
-         *
-         * }
-         */
+        switch (ch) {
+            case CHANNEL_COMMAND:
+                if (command instanceof StringType) {
+                    JSONObject request = new JSONObject();
+
+                    request.put("command", command.toString());
+                    request.put("time", System.currentTimeMillis() / 1000);
+                    request.put("initiator", "localApp");
+
+                    connection.publish("cmd", request.toString().getBytes());
+                }
+                break;
+        }
     }
 
     private void connect() {
@@ -298,6 +302,13 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
 
                 reportString(CHANNEL_CYCLE, missionStatus, "cycle");
                 reportString(CHANNEL_PHASE, missionStatus, "phase");
+            }
+
+            if (reported.has("lastCommand")) {
+                // {"lastCommand":{"command":"start","time":1590519853,"initiator":"rmtApp"}}
+                JSONObject command = reported.getJSONObject("lastCommand");
+
+                reportString(CHANNEL_COMMAND, command, "command");
             }
 
             if (reported.has("signal")) {
