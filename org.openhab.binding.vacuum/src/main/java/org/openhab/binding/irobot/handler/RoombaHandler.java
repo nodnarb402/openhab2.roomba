@@ -19,7 +19,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.Configuration;
@@ -33,10 +32,6 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
-import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionObserver;
-import org.eclipse.smarthome.io.transport.mqtt.MqttConnectionState;
-import org.eclipse.smarthome.io.transport.mqtt.MqttMessageSubscriber;
-import org.eclipse.smarthome.io.transport.mqtt.reconnect.PeriodicReconnectStrategy;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openhab.binding.irobot.internal.IdentProtocol;
@@ -53,7 +48,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author hkuhn42 - Initial contribution
  */
-public class RoombaHandler extends BaseThingHandler implements MqttConnectionObserver, MqttMessageSubscriber {
+public class RoombaHandler extends BaseThingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(RoombaHandler.class);
     private final ExecutorService singleThread = Executors.newSingleThreadExecutor();
@@ -86,7 +81,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
             }
 
             if (connection != null) {
-                connection.forceStop();
+                connection.stop();
                 connection = null;
             }
         });
@@ -200,26 +195,8 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
                 logger.debug("Password is: " + config.password);
 
                 // BLID is used as both client ID and username. The name of BLID also came from Roomba980-python
-                connection = new RoombaMqttBrokerConnection(config.ipaddress, blid);
-                connection.setCredentials(blid, config.password);
-                connection.setTrustManagers(RawMQTT.getTrustManagers());
-                // 1 here actually corresponds to MQTT qos 0 (AT_MOST_ONCE). Only this value is accepted
-                // by Roomba, others just cause it to reject the command and drop the connection.
-                connection.setQos(1);
-                // MQTT connection reconnects itself, so we don't have to call scheduleReconnect()
-                // when it breaks. Just set the period in ms.
-                connection.setReconnectStrategy(
-                        new PeriodicReconnectStrategy(reconnectDelay * 1000, reconnectDelay * 1000));
-                connection.start().exceptionally(e -> {
-                    connectionStateChanged(MqttConnectionState.DISCONNECTED, e);
-                    return false;
-                }).thenAccept(v -> {
-                    if (!v) {
-                        connectionStateChanged(MqttConnectionState.DISCONNECTED, new TimeoutException("Timeout"));
-                    } else {
-                        connectionStateChanged(MqttConnectionState.CONNECTED, null);
-                    }
-                });
+                connection = new RoombaMqttBrokerConnection(config.ipaddress, blid, this);
+                connection.start(blid, config.password);
 
             } catch (Exception e) {
                 error = e.toString();
@@ -239,44 +216,18 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
         }, reconnectDelay, TimeUnit.SECONDS);
     }
 
-    @Override
-    public void connectionStateChanged(MqttConnectionState state, @Nullable Throwable error) {
-        if (state == MqttConnectionState.CONNECTED) {
-            logger.debug("Connection established");
-            updateStatus(ThingStatus.ONLINE);
-
-            // Roomba sends us two topics:
-            // "wifistat" - reports singnal strength and current robot position
-            // "$aws/things/<BLID>/shadow/update" - the rest of messages
-            // Subscribe to everything since we're interested in both
-            connection.subscribe("#", this).exceptionally(e -> {
-                logger.error("Subscription failed: " + e.getMessage());
-                return false;
-            }).thenAccept(v -> {
-                if (!v) {
-                    logger.error("Subscription timeout");
-                } else {
-                    logger.trace("Subscription done");
-                }
-            });
-
-        } else {
-            // channelStateByChannelUID.values().forEach(c -> c.stop());
-            String message;
-
-            if (error != null) {
-                message = error.getMessage();
-                logger.error("MQTT connection failed: " + message);
-            } else {
-                message = null;
-                logger.error("MQTT connection failed for unspecified reason");
-            }
-
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, message);
-        }
+    public void onConnected() {
+        updateStatus(ThingStatus.ONLINE);
     }
 
-    @Override
+    public void onDisconnected(Throwable error) {
+        String message = error.getMessage();
+
+        logger.error("MQTT connection failed: {}", message);
+        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, message);
+        scheduleReconnect();
+    }
+
     public void processMessage(String topic, byte[] payload) {
         String jsonStr = new String(payload);
         logger.debug("Got topic {} data {}", topic, jsonStr);
