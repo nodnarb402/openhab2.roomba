@@ -46,11 +46,13 @@ public class IRobotDiscoveryService extends AbstractDiscoveryService {
             for (InetAddress broadcastAddress : getBroadcastAddresses()) {
                 logger.debug("Starting broadcast for {}", broadcastAddress.toString());
 
-                DatagramSocket socket = IdentProtocol.sendRequest(broadcastAddress);
-
-                if (socket != null) {
+                DatagramSocket socket;
+                try {
+                    socket = IdentProtocol.sendRequest(broadcastAddress);
                     while (receivePacketAndDiscover(socket)) {
                     }
+                } catch (Exception e) {
+                    logger.debug("Error sending broadcast: {}", e.toString());
                 }
             }
 

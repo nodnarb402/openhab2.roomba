@@ -14,22 +14,17 @@ public class IdentProtocol {
     private static final String UDP_PACKET_CONTENTS = "irobotmcs";
     private static final int REMOTE_UDP_PORT = 5678;
 
-    public static DatagramSocket sendRequest(InetAddress host) {
-        try {
-            DatagramSocket socket = new DatagramSocket();
+    public static DatagramSocket sendRequest(InetAddress host) throws Exception {
+        DatagramSocket socket = new DatagramSocket();
 
-            socket.setBroadcast(true);
-            socket.setReuseAddress(true);
+        socket.setBroadcast(true);
+        socket.setReuseAddress(true);
 
-            byte[] packetContents = UDP_PACKET_CONTENTS.getBytes(StandardCharsets.UTF_8);
-            DatagramPacket packet = new DatagramPacket(packetContents, packetContents.length, host, REMOTE_UDP_PORT);
+        byte[] packetContents = UDP_PACKET_CONTENTS.getBytes(StandardCharsets.UTF_8);
+        DatagramPacket packet = new DatagramPacket(packetContents, packetContents.length, host, REMOTE_UDP_PORT);
 
-            socket.send(packet);
-            return socket;
-
-        } catch (Exception e) {
-            return null;
-        }
+        socket.send(packet);
+        return socket;
     }
 
     public static DatagramPacket receiveResponse(DatagramSocket socket) throws IOException {

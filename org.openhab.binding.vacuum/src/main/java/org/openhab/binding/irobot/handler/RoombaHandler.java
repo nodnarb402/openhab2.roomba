@@ -9,11 +9,9 @@ package org.openhab.binding.irobot.handler;
 
 import static org.openhab.binding.irobot.IRobotBindingConstants.*;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Hashtable;
@@ -220,9 +218,7 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
                     }
                 });
 
-            } catch (UnknownHostException e) {
-                error = e.toString();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 error = e.toString();
             }
 
