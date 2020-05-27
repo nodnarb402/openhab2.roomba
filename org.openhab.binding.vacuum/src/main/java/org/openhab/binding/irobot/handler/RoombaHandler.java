@@ -203,6 +203,9 @@ public class RoombaHandler extends BaseThingHandler implements MqttConnectionObs
                 connection = new RoombaMqttBrokerConnection(config.ipaddress, blid);
                 connection.setCredentials(blid, config.password);
                 connection.setTrustManagers(RawMQTT.getTrustManagers());
+                // 1 here actually corresponds to MQTT qos 0 (AT_MOST_ONCE). Only this value is accepted
+                // by Roomba, others just cause it to reject the command and drop the connection.
+                connection.setQos(1);
                 // MQTT connection reconnects itself, so we don't have to call scheduleReconnect()
                 // when it breaks. Just set the period in ms.
                 connection.setReconnectStrategy(
