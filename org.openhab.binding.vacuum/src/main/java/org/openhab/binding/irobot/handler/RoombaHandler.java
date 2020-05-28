@@ -349,7 +349,7 @@ public class RoombaHandler extends BaseThingHandler {
 
     private void reportProperty(String property, JSONObject container, String attribute) {
         if (container.has(attribute)) {
-            updateProperty(property, attribute);
+            updateProperty(property, container.getString(attribute));
         }
     }
 }
