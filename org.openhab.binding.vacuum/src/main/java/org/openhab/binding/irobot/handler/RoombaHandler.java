@@ -275,7 +275,7 @@ public class RoombaHandler extends BaseThingHandler {
                             command = CMD_DOCK;
                             break;
                         default:
-                            command = CMD_CLEAN;
+                            command = cycle; // "clean" or "spot"
                             break;
                     }
                 }

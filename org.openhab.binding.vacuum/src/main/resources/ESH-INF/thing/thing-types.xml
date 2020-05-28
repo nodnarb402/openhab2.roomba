@@ -39,6 +39,7 @@
         <state>
             <options>
                 <option value="clean">Clean</option>
+                <option value="spot">Spot</option>
                 <option value="dock">Dock</option>
                 <option value="pause">Pause</option>
                 <option value="stop">Stop</option>
@@ -53,6 +54,7 @@
             <options>
                 <option value="none">None</option>
                 <option value="clean">Clean</option>
+                <option value="spot">Spot</option>
             </options>
         </state>
     </channel-type>

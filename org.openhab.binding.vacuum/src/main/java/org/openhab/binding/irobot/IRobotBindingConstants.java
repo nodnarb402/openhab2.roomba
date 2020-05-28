@@ -32,6 +32,7 @@ public class IRobotBindingConstants {
     public final static String CHANNEL_SNR = "snr";
 
     public final static String CMD_CLEAN = "clean";
+    public final static String CMD_SPOT = "spot";
     public final static String CMD_DOCK = "dock";
     public final static String CMD_PAUSE = "pause";
     public final static String CMD_STOP = "stop";
