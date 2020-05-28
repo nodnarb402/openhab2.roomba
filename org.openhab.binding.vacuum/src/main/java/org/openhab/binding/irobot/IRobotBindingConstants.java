@@ -26,6 +26,8 @@ public class IRobotBindingConstants {
     public final static String CHANNEL_COMMAND = "command";
     public final static String CHANNEL_CYCLE = "cycle";
     public final static String CHANNEL_PHASE = "phase";
+    public final static String CHANNEL_BIN = "bin";
+    public final static String CHANNEL_BATTERY = "battery";
     public final static String CHANNEL_RSSI = "rssi";
     public final static String CHANNEL_SNR = "snr";
 
@@ -33,4 +35,8 @@ public class IRobotBindingConstants {
     public final static String CMD_DOCK = "dock";
     public final static String CMD_PAUSE = "pause";
     public final static String CMD_STOP = "stop";
+
+    public final static String BIN_OK = "ok";
+    public final static String BIN_FULL = "full";
+    public final static String BIN_REMOVED = "removed";
 }

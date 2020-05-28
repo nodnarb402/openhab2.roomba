@@ -13,6 +13,8 @@
 		    <channel id="command" typeId="command" />
             <channel id="cycle" typeId="cycle" />
 			<channel id="phase" typeId="phase" />
+			<channel id="battery" typeId="battery" />
+			<channel id="bin" typeId="bin" />
 			<channel id="rssi" typeId="rssi" />
 			<channel id="snr" typeId="snr" />
 		</channels>
@@ -78,13 +80,31 @@
             </options>
         </state>
     </channel-type>
-    <channel-type id="rssi">
+    <channel-type id="battery">
+        <item-type>Number</item-type>
+        <label>Battery</label>
+        <description>Battery charge percentage</description>
+        <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="bin">
+        <item-type>String</item-type>
+        <label>Bin</label>
+        <description>Bin status</description>
+        <state readOnly="true">
+            <options>
+                <option value="ok">OK</option>
+                <option value="full">Full</option>
+                <option value="removed">Removed</option>
+            </options>
+        </state>
+    </channel-type>
+    <channel-type id="rssi" advanced="true">
     	<item-type>Number</item-type>
     	<label>RSSI</label>
     	<description>Wi-Fi signal strength</description>
     	<state readOnly="true"></state>
     </channel-type>
-    <channel-type id="snr">
+    <channel-type id="snr" advanced="true">
         <item-type>Number</item-type>
         <label>SNR</label>
         <description>Wi-Fi signal to noise ratio</description>

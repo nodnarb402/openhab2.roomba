@@ -66,6 +66,7 @@ public class RoombaHandler extends BaseThingHandler {
 
     @Override
     public void initialize() {
+        logger.trace("initialize()");
         config = getConfigAs(RoombaConfiguration.class);
         updateStatus(ThingStatus.UNKNOWN);
         connect();
@@ -286,6 +287,27 @@ public class RoombaHandler extends BaseThingHandler {
                 reportString(CHANNEL_COMMAND, command);
             }
 
+            if (reported.has("batPct")) {
+                reportInt(CHANNEL_BATTERY, reported, "batPct");
+            }
+
+            if (reported.has("bin")) {
+                JSONObject bin = reported.getJSONObject("bin");
+                String binStatus;
+
+                // The bin cannot be both full and removed simultaneously, so let's
+                // encode it as a single value
+                if (!bin.getBoolean("present")) {
+                    binStatus = BIN_REMOVED;
+                } else if (bin.getBoolean("full")) {
+                    binStatus = BIN_FULL;
+                } else {
+                    binStatus = BIN_OK;
+                }
+
+                reportString(CHANNEL_BIN, binStatus);
+            }
+
             if (reported.has("signal")) {
                 // {"signal":{"rssi":-55,"snr":33}}
                 JSONObject signal = reported.getJSONObject("signal");
@@ -293,6 +315,14 @@ public class RoombaHandler extends BaseThingHandler {
                 reportInt(CHANNEL_RSSI, signal, "rssi");
                 reportInt(CHANNEL_SNR, signal, "snr");
             }
+
+            // {"navSwVer":"01.12.01#1","wifiSwVer":"20992","mobilityVer":"5806","bootloaderVer":"4042","umiVer":"6","softwareVer":"v2.4.6-3","tz":{"events":[{"dt":1583082000,"off":180},{"dt":1619884800,"off":180},{"dt":0,"off":0}],"ver":8}}
+            reportProperty(Thing.PROPERTY_FIRMWARE_VERSION, reported, "softwareVer");
+            reportProperty(reported, "navSwVer");
+            reportProperty(reported, "wifiSwVer");
+            reportProperty(reported, "mobilityVer");
+            reportProperty(reported, "bootloaderVer");
+            reportProperty(reported, "umiVer");
         } catch (JSONException e) {
             logger.error("Failed to parse JSON message from {}: {}", config.ipaddress, e);
             logger.error("Raw contents: {}", payload);
@@ -311,5 +341,15 @@ public class RoombaHandler extends BaseThingHandler {
 
         lastState.put(channel, value);
         updateState(channel, value);
+    }
+
+    private void reportProperty(JSONObject container, String attribute) {
+        reportProperty(attribute, container, attribute);
+    }
+
+    private void reportProperty(String property, JSONObject container, String attribute) {
+        if (container.has(attribute)) {
+            updateProperty(property, attribute);
+        }
     }
 }
