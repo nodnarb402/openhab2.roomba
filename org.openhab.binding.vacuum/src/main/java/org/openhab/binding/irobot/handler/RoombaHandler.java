@@ -58,6 +58,7 @@ public class RoombaHandler extends BaseThingHandler {
     private String blid = null;
     protected RoombaMqttBrokerConnection connection;
     private Hashtable<String, State> lastState = new Hashtable<String, State>();
+    private Boolean isPaused = false;
 
     public RoombaHandler(Thing thing) {
         super(thing);
@@ -102,9 +103,15 @@ public class RoombaHandler extends BaseThingHandler {
         switch (ch) {
             case CHANNEL_COMMAND:
                 if (command instanceof StringType) {
+                    String cmd = command.toString();
+
+                    if (cmd.equals(CMD_CLEAN)) {
+                        cmd = isPaused ? "resume" : "start";
+                    }
+
                     JSONObject request = new JSONObject();
 
-                    request.put("command", command.toString());
+                    request.put("command", cmd);
                     request.put("time", System.currentTimeMillis() / 1000);
                     request.put("initiator", "localApp");
 
@@ -249,16 +256,34 @@ public class RoombaHandler extends BaseThingHandler {
             if (reported.has("cleanMissionStatus")) {
                 // {"cleanMissionStatus":{"cycle":"clean","phase":"hmUsrDock","expireM":0,"rechrgM":0,"error":0,"notReady":0,"mssnM":1,"sqft":7,"initiator":"rmtApp","nMssn":39}}
                 JSONObject missionStatus = reported.getJSONObject("cleanMissionStatus");
+                String cycle = missionStatus.getString("cycle");
+                String phase = missionStatus.getString("phase");
+                String command;
 
-                reportString(CHANNEL_CYCLE, missionStatus, "cycle");
-                reportString(CHANNEL_PHASE, missionStatus, "phase");
-            }
+                if (cycle.equals("none")) {
+                    command = CMD_STOP;
+                } else {
+                    switch (phase) {
+                        case "stop":
+                        case "stuck": // CHECKME: could also be equivalent to "stop" command
+                        case "pause": // Never observed in Roomba 930
+                            command = CMD_PAUSE;
+                            break;
+                        case "hmUsrDock":
+                        case "dock": // Never observed in Roomba 930
+                            command = CMD_DOCK;
+                            break;
+                        default:
+                            command = CMD_CLEAN;
+                            break;
+                    }
+                }
 
-            if (reported.has("lastCommand")) {
-                // {"lastCommand":{"command":"start","time":1590519853,"initiator":"rmtApp"}}
-                JSONObject command = reported.getJSONObject("lastCommand");
+                isPaused = command.equals(CMD_PAUSE);
 
-                reportString(CHANNEL_COMMAND, command, "command");
+                reportString(CHANNEL_CYCLE, cycle);
+                reportString(CHANNEL_PHASE, phase);
+                reportString(CHANNEL_COMMAND, command);
             }
 
             if (reported.has("signal")) {
@@ -274,8 +299,8 @@ public class RoombaHandler extends BaseThingHandler {
         }
     }
 
-    private void reportString(String channel, JSONObject container, String attr) {
-        StringType value = StringType.valueOf(container.getString(attr));
+    private void reportString(String channel, String str) {
+        StringType value = StringType.valueOf(str);
 
         lastState.put(channel, value);
         updateState(channel, value);

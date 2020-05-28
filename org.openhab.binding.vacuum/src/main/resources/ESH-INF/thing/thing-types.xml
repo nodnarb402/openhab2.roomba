@@ -36,10 +36,9 @@
         <description>Command to execute</description>
         <state>
             <options>
-                <option value="start">Start</option>
-                <option value="pause">Pause</option>
-                <option value="resume">Resume</option>
+                <option value="clean">Clean</option>
                 <option value="dock">Dock</option>
+                <option value="pause">Pause</option>
                 <option value="stop">Stop</option>
             </options>
         </state>
@@ -65,7 +64,7 @@
                 <option value="new">New Mission</option>
                 <option value="run">Running</option>
                 <option value="resume">Resumed</option>
-                <option value="hmMidMsn">Recharging</option>
+                <option value="hmMidMsn">Going for recharge in mission</option>
                 <option value="recharge">Recharging</option>
                 <option value="stuck">Stuck</option>
                 <option value="hmUsrDock">Going home</option>
@@ -74,7 +73,7 @@
                 <option value="cancelled">Cancelled</option>
                 <option value="stop">Stopped</option>
                 <option value="pause">Paused</option>
-                <option value="hmPostMsn">End Mission</option>
+                <option value="hmPostMsn">Going home after mission</option>
                 <option value="">None</option>
             </options>
         </state>
