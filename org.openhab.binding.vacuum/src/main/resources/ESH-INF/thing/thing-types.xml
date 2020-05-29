@@ -15,6 +15,7 @@
 			<channel id="phase" typeId="phase" />
 			<channel id="battery" typeId="battery" />
 			<channel id="bin" typeId="bin" />
+			<channel id="error" typeId="error" />
 			<channel id="rssi" typeId="rssi" />
 			<channel id="snr" typeId="snr" />
 		</channels>
@@ -97,6 +98,72 @@
                 <option value="ok">OK</option>
                 <option value="full">Full</option>
                 <option value="removed">Removed</option>
+            </options>
+        </state>
+    </channel-type>
+    <channel-type id="error">
+        <item-type>String</item-type>
+        <label>Error</label>
+        <description>Error code</description>
+        <state readOnly="true">
+            <options>
+                <!-- Taken from Roomba980-Python, originally reverse engineered from phone app -->
+                <option value="0">None</option>
+                <option value="1">Left wheel off floor</option>
+                <option value="2">Main Brushes stuck</option>
+                <option value="3">Right wheel off floor</option>
+                <option value="4">Left wheel stuck</option>
+                <option value="5">Right wheel stuck</option>
+                <option value="6">Stuck near a cliff</option>
+                <option value="7">Left wheel error</option>
+                <option value="8">Bin error</option>
+                <option value="9">Bumper stuck</option>
+                <option value="10">Right wheel error</option>
+                <option value="11">Bin error</option>
+                <option value="12">Cliff sensor issue</option>
+                <option value="13">Both wheels off floor</option>
+                <option value="14">Bin missing</option>
+                <option value="15">Reboot required</option>
+                <option value="16">Bumped unexpectedly</option>
+                <option value="17">Path blocked</option>
+                <option value="18">Docking issue</option>
+                <option value="19">Undocking issue</option>
+                <option value="20">Docking issue</option>
+                <option value="21">Navigation problem</option>
+                <option value="22">Navigation problem</option> 
+                <option value="23">Battery issue</option>
+                <option value="24">Navigation problem</option>
+                <option value="25">Reboot required</option>
+                <option value="26">Vacuum problem</option>
+                <option value="27">Vacuum problem</option>
+                <option value="29">Software update needed</option>
+                <option value="30">Vacuum problem</option>
+                <option value="31">Reboot required</option>
+                <option value="32">Smart map problem</option>
+                <option value="33">Path blocked</option>
+                <option value="34">Reboot required</option>
+                <option value="35">Unrecognized cleaning pad</option>
+                <option value="36">Bin full</option>
+                <option value="37">Tank needed refilling</option>
+                <option value="38">Vacuum problem</option>
+                <option value="39">Reboot required</option>
+                <option value="40">Navigation problem</option>
+                <option value="41">Timed out</option>
+                <option value="42">Localization problem</option>
+                <option value="43">Navigation problem</option>
+                <option value="44">Pump issue</option>
+                <option value="45">Lid open</option>
+                <option value="46">Low battery</option>
+                <option value="47">Reboot required</option>
+                <option value="48">Path blocked</option>
+                <option value="52">Pad required attention</option>
+                <option value="65">Hardware problem detected</option>
+                <option value="66">Low memory</option>
+                <option value="68">Hardware problem detected</option>
+                <option value="73">Pad type changed</option>
+                <option value="74">Max area reached</option>
+                <option value="75">Navigation problem</option>
+                <option value="76">Hardware problem detected</option>
             </options>
         </state>
     </channel-type>

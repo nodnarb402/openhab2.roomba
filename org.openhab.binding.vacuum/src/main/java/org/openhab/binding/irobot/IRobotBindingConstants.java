@@ -28,6 +28,7 @@ public class IRobotBindingConstants {
     public final static String CHANNEL_PHASE = "phase";
     public final static String CHANNEL_BIN = "bin";
     public final static String CHANNEL_BATTERY = "battery";
+    public final static String CHANNEL_ERROR = "error";
     public final static String CHANNEL_RSSI = "rssi";
     public final static String CHANNEL_SNR = "snr";
 

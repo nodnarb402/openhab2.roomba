@@ -285,10 +285,11 @@ public class RoombaHandler extends BaseThingHandler {
                 reportString(CHANNEL_CYCLE, cycle);
                 reportString(CHANNEL_PHASE, phase);
                 reportString(CHANNEL_COMMAND, command);
+                reportString(CHANNEL_ERROR, String.valueOf(missionStatus.getInt("error")));
             }
 
             if (reported.has("batPct")) {
-                reportInt(CHANNEL_BATTERY, reported, "batPct");
+                reportInt(CHANNEL_BATTERY, reported.getInt("batPct"));
             }
 
             if (reported.has("bin")) {
@@ -312,8 +313,8 @@ public class RoombaHandler extends BaseThingHandler {
                 // {"signal":{"rssi":-55,"snr":33}}
                 JSONObject signal = reported.getJSONObject("signal");
 
-                reportInt(CHANNEL_RSSI, signal, "rssi");
-                reportInt(CHANNEL_SNR, signal, "snr");
+                reportInt(CHANNEL_RSSI, signal.getInt("rssi"));
+                reportInt(CHANNEL_SNR, signal.getInt("snr"));
             }
 
             // {"navSwVer":"01.12.01#1","wifiSwVer":"20992","mobilityVer":"5806","bootloaderVer":"4042","umiVer":"6","softwareVer":"v2.4.6-3","tz":{"events":[{"dt":1583082000,"off":180},{"dt":1619884800,"off":180},{"dt":0,"off":0}],"ver":8}}
@@ -336,8 +337,8 @@ public class RoombaHandler extends BaseThingHandler {
         updateState(channel, value);
     }
 
-    private void reportInt(String channel, JSONObject container, String attr) {
-        DecimalType value = new DecimalType(container.getInt(attr));
+    private void reportInt(String channel, int n) {
+        DecimalType value = new DecimalType(n);
 
         lastState.put(channel, value);
         updateState(channel, value);
