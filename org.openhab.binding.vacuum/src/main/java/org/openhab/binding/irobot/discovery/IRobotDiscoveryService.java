@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.smarthome.config.discovery.AbstractDiscoveryService;
 import org.eclipse.smarthome.config.discovery.DiscoveryResult;
@@ -28,10 +30,32 @@ public class IRobotDiscoveryService extends AbstractDiscoveryService {
 
     private final static Logger logger = LoggerFactory.getLogger(IRobotDiscoveryService.class);
     private final Runnable scanner;
+    private ScheduledFuture<?> backgroundFuture;
 
     public IRobotDiscoveryService() {
         super(Collections.singleton(IRobotBindingConstants.THING_TYPE_ROOMBA), 30, true);
         scanner = createScanner();
+    }
+
+    @Override
+    protected void startBackgroundDiscovery() {
+        logger.trace("Starting background discovery");
+        stopBackgroundScan();
+        backgroundFuture = scheduler.scheduleWithFixedDelay(scanner, 0, 60, TimeUnit.SECONDS);
+    }
+
+    @Override
+    protected void stopBackgroundDiscovery() {
+        logger.trace("Stopping background discovery");
+        stopBackgroundScan();
+        super.stopBackgroundDiscovery();
+    }
+
+    private void stopBackgroundScan() {
+        if (backgroundFuture != null && !backgroundFuture.isDone()) {
+            backgroundFuture.cancel(true);
+            backgroundFuture = null;
+        }
     }
 
     @Override
