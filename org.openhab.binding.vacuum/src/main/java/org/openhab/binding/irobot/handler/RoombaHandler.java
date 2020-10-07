@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.smarthome.config.core.Configuration;
 import org.eclipse.smarthome.core.library.types.DecimalType;
+import org.eclipse.smarthome.core.library.types.OnOffType;
 import org.eclipse.smarthome.core.library.types.StringType;
 import org.eclipse.smarthome.core.thing.ChannelUID;
 import org.eclipse.smarthome.core.thing.Thing;
@@ -32,6 +33,7 @@ import org.eclipse.smarthome.core.thing.binding.BaseThingHandler;
 import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.core.types.RefreshType;
 import org.eclipse.smarthome.core.types.State;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openhab.binding.irobot.internal.IdentProtocol;
@@ -58,6 +60,7 @@ public class RoombaHandler extends BaseThingHandler {
     private String blid = null;
     protected RoombaMqttBrokerConnection connection;
     private Hashtable<String, State> lastState = new Hashtable<String, State>();
+    private JSONObject lastSchedule = null;
     private Boolean isPaused = false;
 
     public RoombaHandler(Thing thing) {
@@ -101,25 +104,55 @@ public class RoombaHandler extends BaseThingHandler {
 
             return;
         }
-        switch (ch) {
-            case CHANNEL_COMMAND:
-                if (command instanceof StringType) {
-                    String cmd = command.toString();
 
-                    if (cmd.equals(CMD_CLEAN)) {
-                        cmd = isPaused ? "resume" : "start";
-                    }
+        if (ch.equals(CHANNEL_COMMAND)) {
+            if (command instanceof StringType) {
+                String cmd = command.toString();
 
-                    JSONObject request = new JSONObject();
-
-                    request.put("command", cmd);
-                    request.put("time", System.currentTimeMillis() / 1000);
-                    request.put("initiator", "localApp");
-
-                    connection.publish("cmd", request.toString().getBytes());
+                if (cmd.equals(CMD_CLEAN)) {
+                    cmd = isPaused ? "resume" : "start";
                 }
-                break;
+
+                JSONObject request = new JSONObject();
+
+                request.put("command", cmd);
+                request.put("time", System.currentTimeMillis() / 1000);
+                request.put("initiator", "localApp");
+
+                sendRequest("cmd", request);
+            }
+        } else if (ch.startsWith(CHANNEL_SCHED_SWITCH_PREFIX)) {
+            JSONObject schedule = lastSchedule;
+
+            // Schedule can only be updated in a bulk, so we have to store current
+            // schedule and modify components.
+            if (command instanceof OnOffType && schedule != null && schedule.has("cycle")) {
+                for (int i = 0; i < CHANNEL_SCHED_SWITCH.length; i++) {
+                    if (ch.equals(CHANNEL_SCHED_SWITCH[i])) {
+                        JSONArray cycle = schedule.getJSONArray("cycle");
+                        cycle.put(i, command.equals(OnOffType.ON) ? "start" : "none");
+
+                        sendDelta("cleanSchedule", schedule);
+                        break;
+                    }
+                }
+            }
         }
+    }
+
+    private void sendDelta(String key, JSONObject data) {
+        // Huge thanks to Dorita980 author(s) for an insight on this
+        JSONObject state = new JSONObject();
+        state.put(key, data);
+        JSONObject request = new JSONObject();
+        request.put("state", state);
+
+        logger.trace("Sending delta: {}", request.toString());
+        sendRequest("delta", request);
+    }
+
+    private void sendRequest(String topic, JSONObject request) {
+        connection.publish(topic, request.toString().getBytes());
     }
 
     private void connect() {
@@ -317,6 +350,21 @@ public class RoombaHandler extends BaseThingHandler {
                 reportInt(CHANNEL_SNR, signal.getInt("snr"));
             }
 
+            if (reported.has("cleanSchedule")) {
+                // "cleanSchedule":{"cycle":["none","start","start","start","start","none","none"],"h":[9,12,12,12,12,12,9],"m":[0,0,0,0,0,0,0]}
+                JSONObject schedule = reported.getJSONObject("cleanSchedule");
+
+                if (schedule.has("cycle")) {
+                    JSONArray cycle = schedule.getJSONArray("cycle");
+
+                    for (int i = 0; i < cycle.length(); i++) {
+                        reportSwitch(CHANNEL_SCHED_SWITCH[i], cycle.getString(i).equals("start"));
+                    }
+                }
+
+                lastSchedule = schedule;
+            }
+
             // {"navSwVer":"01.12.01#1","wifiSwVer":"20992","mobilityVer":"5806","bootloaderVer":"4042","umiVer":"6","softwareVer":"v2.4.6-3","tz":{"events":[{"dt":1583082000,"off":180},{"dt":1619884800,"off":180},{"dt":0,"off":0}],"ver":8}}
             reportProperty(Thing.PROPERTY_FIRMWARE_VERSION, reported, "softwareVer");
             reportProperty(reported, "navSwVer");
@@ -331,15 +379,18 @@ public class RoombaHandler extends BaseThingHandler {
     }
 
     private void reportString(String channel, String str) {
-        StringType value = StringType.valueOf(str);
-
-        lastState.put(channel, value);
-        updateState(channel, value);
+        reportState(channel, StringType.valueOf(str));
     }
 
     private void reportInt(String channel, int n) {
-        DecimalType value = new DecimalType(n);
+        reportState(channel, new DecimalType(n));
+    }
 
+    private void reportSwitch(String channel, boolean s) {
+        reportState(channel, OnOffType.from(s));
+    }
+
+    private void reportState(String channel, State value) {
         lastState.put(channel, value);
         updateState(channel, value);
     }

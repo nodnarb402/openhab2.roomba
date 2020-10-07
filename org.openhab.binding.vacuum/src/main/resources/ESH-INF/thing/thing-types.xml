@@ -18,6 +18,34 @@
 			<channel id="error" typeId="error" />
 			<channel id="rssi" typeId="rssi" />
 			<channel id="snr" typeId="snr" />
+			<channel id="sched_mon" typeId="sched_switch">
+			    <label>Schedule Mon</label>
+                <description>Monday schedule active</description>
+			</channel>
+            <channel id="sched_tue" typeId="sched_switch">
+                <label>Schedule Tue</label>
+                <description>Tuesday schedule active</description>
+            </channel>
+            <channel id="sched_wed" typeId="sched_switch">
+                <label>Schedule Wed</label>
+                <description>Wednesday schedule active</description>
+            </channel>
+            <channel id="sched_thu" typeId="sched_switch">
+                <label>Schedule Thu</label>
+                <description>Thirsday schedule active</description>
+            </channel>
+            <channel id="sched_fri" typeId="sched_switch">
+                <label>Schedule Fri</label>
+                <description>Friday schedule active</description>
+            </channel>
+            <channel id="sched_sat" typeId="sched_switch">
+                <label>Schedule Sat</label>
+                <description>Saturday schedule active</description>
+            </channel>
+            <channel id="sched_sun" typeId="sched_switch">
+                <label>Schedule Sun</label>
+                <description>Sunday schedule active</description>
+            </channel>
 		</channels>
 		<config-description>
 			<parameter name="ipaddress" type="text">
@@ -166,6 +194,10 @@
                 <option value="76">Hardware problem detected</option>
             </options>
         </state>
+    </channel-type>
+    <channel-type id="sched_switch">
+        <item-type>Switch</item-type>
+        <label>Schedule</label>
     </channel-type>
     <channel-type id="rssi" advanced="true">
     	<item-type>Number</item-type>

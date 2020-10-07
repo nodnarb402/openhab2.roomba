@@ -31,6 +31,10 @@ public class IRobotBindingConstants {
     public final static String CHANNEL_ERROR = "error";
     public final static String CHANNEL_RSSI = "rssi";
     public final static String CHANNEL_SNR = "snr";
+    // iRobot's JSON lists weekdays starting from Saturday
+    public final static String CHANNEL_SCHED_SWITCH_PREFIX = "sched_";
+    public final static String[] CHANNEL_SCHED_SWITCH = { "sched_sun", "sched_mon", "sched_tue", "sched_wed",
+            "sched_thu", "sched_fri", "sched_sat" };
 
     public final static String CMD_CLEAN = "clean";
     public final static String CMD_SPOT = "spot";

@@ -1,15 +1,17 @@
 # iRobot binding
 
 This binding provides for integration of products by iRobot company (http://www.irobot.com/). It is currently developed to support Roomba 900
-series robotic vacuum cleaner with built-in Wi-Fi module.
+series robotic vacuum cleaner with built-in Wi-Fi module. The binding interfaces to the robot directly without any need for a dedicated MQTT server.
 
-The development starts with an abandoned draft by hkunh42 (http://github.com/hkuhn42/openhab2.roomba) and will heavily use
-Roomba980-Python project by Nick Waterton (http://github.com/NickWaterton/Roomba980-Python) as a reference. The goal is to
-implement a binding that interfaces directly to the robot without a need for a dedicated MQTT server.
+The development starts with an abandoned draft by hkunh42 (http://github.com/hkuhn42/openhab2.roomba) and heavily uses the following
+projects as a reference:
+- Roomba980-Python by Nick Waterton (http://github.com/NickWaterton/Roomba980-Python)
+- Dorita980 by Facu ZAK (https://github.com/koalazak/dorita980)
 
 ## Supported Things
 
 - iRobot Roomba robotic vacuum cleaner (https://www.irobot.com/roomba). The binding has been developed and tested with Roomba 930.
+- iRobot Braava has also been reported to work except Braava-specific cycles and automatic password retrieval.
 
 ## Discovery
 
@@ -37,16 +39,23 @@ There's no global configuration for this binding.
 
 ## Channels
 
-| channel | type   | description                                        | Read-only |
-|---------|--------|----------------------------------------------------|-----------|
-| command | String | Command to execute: clean, spot, dock, pause, stop | N |
-| cycle   | String | Current mission: none, clean, spot                 | Y |
-| phase   | String | Current phase of the mission; see below.           | Y |
-| battery | Number | Battery charge in percents                         | Y |
-| bin     | String | Bin status: ok, removed, full                      | Y |
-| error   | String | Error code; see below                              | Y |
-| rssi    | Number | Wi-Fi Received Signal Strength indicator in db     | Y |
-| snr     | Number | Wi-Fi Signal to noise ratio                        | Y |
+| channel   | type   | description                                        | Read-only |
+|-----------|--------|----------------------------------------------------|-----------|
+| command   | String | Command to execute: clean, spot, dock, pause, stop | N |
+| cycle     | String | Current mission: none, clean, spot                 | Y |
+| phase     | String | Current phase of the mission; see below.           | Y |
+| battery   | Number | Battery charge in percents                         | Y |
+| bin       | String | Bin status: ok, removed, full                      | Y |
+| error     | String | Error code; see below                              | Y |
+| rssi      | Number | Wi-Fi Received Signal Strength indicator in db     | Y |
+| snr       | Number | Wi-Fi Signal to noise ratio                        | Y |
+| sched_mon | Switch | Scheduled clean enabled for Monday                 | N |
+| sched_tue | Switch | Scheduled clean enabled for Tuesday                | N |
+| sched_wed | Switch | Scheduled clean enabled for Wednesday              | N |
+| sched_thu | Switch | Scheduled clean enabled for Thursday               | N |
+| sched_fri | Switch | Scheduled clean enabled for Friday                 | N |
+| sched_sat | Switch | Scheduled clean enabled for Saturday               | N |
+| sched_sun | Switch | Scheduled clean enabled for Sunday                 | N |
 
 Known phase strings and their meanings:
 
