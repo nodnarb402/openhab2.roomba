@@ -111,7 +111,7 @@ public class IRobotDiscoveryService extends AbstractDiscoveryService {
 
         String host = incomingPacket.getAddress().toString().substring(1);
 
-        logger.debug("Received reply from {}:", host);
+        logger.debug("Received reply from {}", host);
         logger.debug(new String(incomingPacket.getData()));
 
         IdentProtocol.IdentData ident;

@@ -162,7 +162,7 @@ public class RoombaHandler extends BaseThingHandler {
         singleThread.execute(() -> {
             String error = null;
 
-            logger.info("Connecting to " + config.ipaddress);
+            logger.info("Connecting to {}", config.ipaddress);
 
             try {
                 InetAddress host = InetAddress.getByName(config.ipaddress);
@@ -197,7 +197,7 @@ public class RoombaHandler extends BaseThingHandler {
                     blid = ident.blid;
                 }
 
-                logger.debug("BLID is: " + blid);
+                logger.debug("BLID is: {}", blid);
 
                 if (!config.havePassword()) {
                     RawMQTT mqtt;
@@ -271,7 +271,7 @@ public class RoombaHandler extends BaseThingHandler {
 
     public void processMessage(String topic, byte[] payload) {
         String jsonStr = new String(payload);
-        logger.debug("Got topic {} data {}", topic, jsonStr);
+        logger.trace("Got topic {} data {}", topic, jsonStr);
 
         try {
             // Data comes as JSON string: {"state":{"reported":<Actual content here>}}
