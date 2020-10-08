@@ -132,18 +132,24 @@ public class RoombaHandler extends BaseThingHandler {
                         JSONArray cycle = schedule.getJSONArray("cycle");
                         cycle.put(i, command.equals(OnOffType.ON) ? "start" : "none");
 
-                        sendDelta("cleanSchedule", schedule);
+                        JSONObject state = new JSONObject();
+                        state.put("cleanSchedule", schedule);
+                        sendDelta(state);
                         break;
                     }
                 }
             }
+        } else if (ch.equals(CHANNEL_EDGE_CLEAN)) {
+            if (command instanceof OnOffType) {
+                JSONObject state = new JSONObject();
+                state.put("openOnly", command.equals(OnOffType.OFF));
+                sendDelta(state);
+            }
         }
     }
 
-    private void sendDelta(String key, JSONObject data) {
+    private void sendDelta(JSONObject state) {
         // Huge thanks to Dorita980 author(s) for an insight on this
-        JSONObject state = new JSONObject();
-        state.put(key, data);
         JSONObject request = new JSONObject();
         request.put("state", state);
 
@@ -363,6 +369,11 @@ public class RoombaHandler extends BaseThingHandler {
                 }
 
                 lastSchedule = schedule;
+            }
+
+            if (reported.has("openOnly")) {
+                // "openOnly":false
+                reportSwitch(CHANNEL_EDGE_CLEAN, !reported.getBoolean("openOnly"));
             }
 
             // {"navSwVer":"01.12.01#1","wifiSwVer":"20992","mobilityVer":"5806","bootloaderVer":"4042","umiVer":"6","softwareVer":"v2.4.6-3","tz":{"events":[{"dt":1583082000,"off":180},{"dt":1619884800,"off":180},{"dt":0,"off":0}],"ver":8}}

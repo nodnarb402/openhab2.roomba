@@ -46,6 +46,7 @@
                 <label>Schedule Sun</label>
                 <description>Sunday schedule active</description>
             </channel>
+            <channel id="edge_clean" typeId="edge_clean" />
 		</channels>
 		<config-description>
 			<parameter name="ipaddress" type="text">
@@ -210,6 +211,11 @@
         <label>SNR</label>
         <description>Wi-Fi signal to noise ratio</description>
         <state readOnly="true"></state>
+    </channel-type>
+    <channel-type id="edge_clean" advanced="true">
+        <item-type>Switch</item-type>
+        <label>Edge clean</label>
+        <description>Seek out and clean along walls and furniture legs</description>
     </channel-type>
 
 </thing:thing-descriptions>
