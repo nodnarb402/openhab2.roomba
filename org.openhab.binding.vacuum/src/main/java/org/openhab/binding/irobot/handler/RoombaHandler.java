@@ -134,14 +134,25 @@ public class RoombaHandler extends BaseThingHandler {
                 for (int i = 0; i < CHANNEL_SCHED_SWITCH.length; i++) {
                     if (ch.equals(CHANNEL_SCHED_SWITCH[i])) {
                         JSONArray cycle = schedule.getJSONArray("cycle");
-                        cycle.put(i, command.equals(OnOffType.ON) ? "start" : "none");
 
-                        JSONObject state = new JSONObject();
-                        state.put("cleanSchedule", schedule);
-                        sendDelta(state);
+                        enableCycle(cycle, i, command.equals(OnOffType.ON));
+                        sendSchedule(schedule);
                         break;
                     }
                 }
+            }
+        } else if (ch.equals(CHANNEL_SCHEDULE)) {
+            if (command instanceof DecimalType) {
+                int bitmask = ((DecimalType) command).intValue();
+                JSONArray cycle = new JSONArray();
+
+                for (int i = 0; i < CHANNEL_SCHED_SWITCH.length; i++) {
+                    enableCycle(cycle, i, (bitmask & (1 << i)) != 0);
+                }
+
+                JSONObject schedule = new JSONObject();
+                schedule.put("cycle", cycle);
+                sendSchedule(schedule);
             }
         } else if (ch.equals(CHANNEL_EDGE_CLEAN)) {
             if (command instanceof OnOffType) {
@@ -172,6 +183,16 @@ public class RoombaHandler extends BaseThingHandler {
                 sendDelta(state);
             }
         }
+    }
+
+    private void enableCycle(JSONArray cycle, int i, boolean enable) {
+        cycle.put(i, enable ? "start" : "none");
+    }
+
+    private void sendSchedule(JSONObject schedule) {
+        JSONObject state = new JSONObject();
+        state.put("cleanSchedule", schedule);
+        sendDelta(state);
     }
 
     private void sendDelta(JSONObject state) {
@@ -388,10 +409,18 @@ public class RoombaHandler extends BaseThingHandler {
 
                 if (schedule.has("cycle")) {
                     JSONArray cycle = schedule.getJSONArray("cycle");
+                    int binary = 0;
 
                     for (int i = 0; i < cycle.length(); i++) {
-                        reportSwitch(CHANNEL_SCHED_SWITCH[i], cycle.getString(i).equals("start"));
+                        boolean on = cycle.getString(i).equals("start");
+
+                        reportSwitch(CHANNEL_SCHED_SWITCH[i], on);
+                        if (on) {
+                            binary |= (1 << i);
+                        }
                     }
+
+                    reportInt(CHANNEL_SCHEDULE, binary);
                 }
 
                 lastSchedule = schedule;

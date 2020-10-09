@@ -46,6 +46,7 @@
                 <label>Schedule Sun</label>
                 <description>Sunday schedule active</description>
             </channel>
+            <channel id="schedule" typeId="schedule" />
             <channel id="edge_clean" typeId="edge_clean" />
             <channel id="always_finish" typeId="always_finish" />
             <channel id="power_boost" typeId="power_boost" />
@@ -202,6 +203,12 @@
     <channel-type id="sched_switch">
         <item-type>Switch</item-type>
         <label>Schedule</label>
+    </channel-type>
+    <channel-type id="schedule" advanced="true">
+        <item-type>Number</item-type>
+        <label>Schedule</label>
+        <description>Schedule bitmask for use in scripts: Sun Mon Tue Wed Thu Fri Sat</description>
+        <state min="0" max="127" />
     </channel-type>
     <channel-type id="rssi" advanced="true">
     	<item-type>Number</item-type>

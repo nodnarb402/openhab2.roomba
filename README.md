@@ -56,6 +56,7 @@ There's no global configuration for this binding.
 | sched_fri     | Switch | Scheduled clean enabled for Friday                 | N |
 | sched_sat     | Switch | Scheduled clean enabled for Saturday               | N |
 | sched_sun     | Switch | Scheduled clean enabled for Sunday                 | N |
+| schedule      | Number | Schedule bitmask for use in scripts. 7 bits, bit #0 corresponds to Sunday | N |
 | edge_clean    | Switch | Seek out and clean along walls and furniture legs  | N |
 | always_finish | Switch | Whether to keep cleaning if the bin becomes full   | N |
 | power_boost   | String | Power boost mode: "auto", "performance", "eco"     | N |

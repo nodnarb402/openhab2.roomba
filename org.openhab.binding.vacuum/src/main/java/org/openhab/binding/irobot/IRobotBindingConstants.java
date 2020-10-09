@@ -35,6 +35,7 @@ public class IRobotBindingConstants {
     public final static String CHANNEL_SCHED_SWITCH_PREFIX = "sched_";
     public final static String[] CHANNEL_SCHED_SWITCH = { "sched_sun", "sched_mon", "sched_tue", "sched_wed",
             "sched_thu", "sched_fri", "sched_sat" };
+    public final static String CHANNEL_SCHEDULE = "schedule";
     public final static String CHANNEL_EDGE_CLEAN = "edge_clean";
     public final static String CHANNEL_ALWAYS_FINISH = "always_finish";
     public final static String CHANNEL_POWER_BOOST = "power_boost";
