@@ -61,7 +61,11 @@ public class RoombaHandler extends BaseThingHandler {
     protected RoombaMqttBrokerConnection connection;
     private Hashtable<String, State> lastState = new Hashtable<String, State>();
     private JSONObject lastSchedule = null;
-    private Boolean isPaused = false;
+    private boolean auto_passes = true;
+    private Boolean two_passes = null;
+    private boolean carpet_boost = true;
+    private Boolean vac_high = null;
+    private boolean isPaused = false;
 
     public RoombaHandler(Thing thing) {
         super(thing);
@@ -143,6 +147,28 @@ public class RoombaHandler extends BaseThingHandler {
             if (command instanceof OnOffType) {
                 JSONObject state = new JSONObject();
                 state.put("openOnly", command.equals(OnOffType.OFF));
+                sendDelta(state);
+            }
+        } else if (ch.equals(CHANNEL_ALWAYS_FINISH)) {
+            if (command instanceof OnOffType) {
+                JSONObject state = new JSONObject();
+                state.put("binPause", command.equals(OnOffType.OFF));
+                sendDelta(state);
+            }
+        } else if (ch.equals(CHANNEL_POWER_BOOST)) {
+            if (command instanceof StringType) {
+                String cmd = command.toString();
+                JSONObject state = new JSONObject();
+                state.put("carpetBoost", cmd.equals(BOOST_AUTO));
+                state.put("vacHigh", cmd.equals(BOOST_PERFORMANCE));
+                sendDelta(state);
+            }
+        } else if (ch.equals(CHANNEL_CLEAN_PASSES)) {
+            if (command instanceof StringType) {
+                String cmd = command.toString();
+                JSONObject state = new JSONObject();
+                state.put("noAutoPasses", !cmd.equals(PASSES_AUTO));
+                state.put("twoPass", cmd.equals(PASSES_2));
                 sendDelta(state);
             }
         }
@@ -376,6 +402,51 @@ public class RoombaHandler extends BaseThingHandler {
                 reportSwitch(CHANNEL_EDGE_CLEAN, !reported.getBoolean("openOnly"));
             }
 
+            if (reported.has("binPause")) {
+                // "binPause":true
+                reportSwitch(CHANNEL_ALWAYS_FINISH, !reported.getBoolean("binPause"));
+            }
+
+            if (reported.has("carpetBoost")) {
+                // "carpetBoost":true
+                carpet_boost = reported.getBoolean("carpetBoost");
+                if (carpet_boost) {
+                    // When set to true, overrides vacHigh
+                    reportString(CHANNEL_POWER_BOOST, BOOST_AUTO);
+                } else if (vac_high != null) {
+                    reportVacHigh();
+                }
+            }
+
+            if (reported.has("vacHigh")) {
+                // "vacHigh":false
+                vac_high = reported.getBoolean("vacHigh");
+                if (!carpet_boost) {
+                    // Can be overridden by "carpetBoost":true
+                    reportVacHigh();
+                }
+            }
+
+            if (reported.has("noAutoPasses")) {
+                // "noAutoPasses":true
+                auto_passes = !reported.getBoolean("noAutoPasses");
+                if (auto_passes) {
+                    // When set to false, overrides twoPass
+                    reportString(CHANNEL_CLEAN_PASSES, PASSES_AUTO);
+                } else if (two_passes != null) {
+                    reportTwoPasses();
+                }
+            }
+
+            if (reported.has("twoPass")) {
+                // "twoPass":true
+                two_passes = reported.getBoolean("twoPass");
+                if (!auto_passes) {
+                    // Can be overridden by "noAutoPasses":false
+                    reportTwoPasses();
+                }
+            }
+
             // {"navSwVer":"01.12.01#1","wifiSwVer":"20992","mobilityVer":"5806","bootloaderVer":"4042","umiVer":"6","softwareVer":"v2.4.6-3","tz":{"events":[{"dt":1583082000,"off":180},{"dt":1619884800,"off":180},{"dt":0,"off":0}],"ver":8}}
             reportProperty(Thing.PROPERTY_FIRMWARE_VERSION, reported, "softwareVer");
             reportProperty(reported, "navSwVer");
@@ -387,6 +458,14 @@ public class RoombaHandler extends BaseThingHandler {
             logger.error("Failed to parse JSON message from {}: {}", config.ipaddress, e);
             logger.error("Raw contents: {}", payload);
         }
+    }
+
+    private void reportVacHigh() {
+        reportString(CHANNEL_POWER_BOOST, vac_high ? BOOST_PERFORMANCE : BOOST_ECO);
+    }
+
+    private void reportTwoPasses() {
+        reportString(CHANNEL_CLEAN_PASSES, two_passes ? PASSES_2 : PASSES_1);
     }
 
     private void reportString(String channel, String str) {

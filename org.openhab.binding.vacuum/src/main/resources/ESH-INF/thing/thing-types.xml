@@ -47,6 +47,9 @@
                 <description>Sunday schedule active</description>
             </channel>
             <channel id="edge_clean" typeId="edge_clean" />
+            <channel id="always_finish" typeId="always_finish" />
+            <channel id="power_boost" typeId="power_boost" />
+            <channel id="clean_passes" typeId="clean_passes" />
 		</channels>
 		<config-description>
 			<parameter name="ipaddress" type="text">
@@ -216,6 +219,35 @@
         <item-type>Switch</item-type>
         <label>Edge clean</label>
         <description>Seek out and clean along walls and furniture legs</description>
+    </channel-type>
+    <channel-type id="always_finish" advanced="true">
+        <item-type>Switch</item-type>
+        <label>Always finish</label>
+        <description>Do not pause current mission if the bin is full</description>
+    </channel-type>
+    <channel-type id="power_boost" advanced="true">
+        <item-type>String</item-type>
+        <label>Power boost</label>
+        <description>Carpet boost mode</description>
+        <state>
+	        <options>
+	            <option value="auto">Automatic</option>
+	            <option value="performance">Performance mode</option>
+	            <option value="eco">Eco mode</option>
+	        </options>
+        </state>
+    </channel-type>
+    <channel-type id="clean_passes" advanced="true">
+        <item-type>String</item-type>
+        <label>Cleaning passes</label>
+        <description>Number of cleaning passes to make</description>
+        <state>
+	        <options>
+	            <option value="auto">Automatic</option>
+	            <option value="1">One pass</option>
+	            <option value="2">Two passes</option>
+	        </options>
+        </state>
     </channel-type>
 
 </thing:thing-descriptions>

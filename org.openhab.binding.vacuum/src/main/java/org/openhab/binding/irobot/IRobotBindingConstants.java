@@ -36,6 +36,9 @@ public class IRobotBindingConstants {
     public final static String[] CHANNEL_SCHED_SWITCH = { "sched_sun", "sched_mon", "sched_tue", "sched_wed",
             "sched_thu", "sched_fri", "sched_sat" };
     public final static String CHANNEL_EDGE_CLEAN = "edge_clean";
+    public final static String CHANNEL_ALWAYS_FINISH = "always_finish";
+    public final static String CHANNEL_POWER_BOOST = "power_boost";
+    public final static String CHANNEL_CLEAN_PASSES = "clean_passes";
 
     public final static String CMD_CLEAN = "clean";
     public final static String CMD_SPOT = "spot";
@@ -46,4 +49,12 @@ public class IRobotBindingConstants {
     public final static String BIN_OK = "ok";
     public final static String BIN_FULL = "full";
     public final static String BIN_REMOVED = "removed";
+
+    public final static String BOOST_AUTO = "auto";
+    public final static String BOOST_PERFORMANCE = "performance";
+    public final static String BOOST_ECO = "eco";
+
+    public final static String PASSES_AUTO = "auto";
+    public final static String PASSES_1 = "1";
+    public final static String PASSES_2 = "2";
 }
