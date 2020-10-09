@@ -112,20 +112,20 @@ public class IRobotDiscoveryService extends AbstractDiscoveryService {
         String host = incomingPacket.getAddress().toString().substring(1);
 
         logger.debug("Received reply from {}", host);
-        logger.debug(new String(incomingPacket.getData()));
+        logger.trace(new String(incomingPacket.getData()));
 
         IdentProtocol.IdentData ident;
 
         try {
             ident = new IdentProtocol.IdentData(incomingPacket);
         } catch (JSONException e) {
-            logger.debug("Malformed JSON reply!");
+            logger.error("Malformed JSON reply!");
             return true;
         }
 
         // This check comes from Roomba980-Python
         if (ident.ver < IdentData.MIN_SUPPORTED_VERSION) {
-            logger.debug("Found unsupported iRobot \"{}\" version {} at {}", ident.robotname, ident.ver, host);
+            logger.info("Found unsupported iRobot \"{}\" version {} at {}", ident.robotname, ident.ver, host);
             return true;
         }
 
