@@ -116,13 +116,26 @@ public class RoombaHandler extends BaseThingHandler {
                 if (cmd.equals(CMD_CLEAN)) {
                     cmd = isPaused ? "resume" : "start";
                 }
-
+                         
                 JSONObject request = new JSONObject();
 
+		/*
+		Testing room-related messages
+		Region_id 22 is living room. Set all these to null for whole house clean
+        Need to create new strings for additional requests instead of hardcoding, like so:
+        request.put("ordered", order);
+		request.put("pmap_id", mapid);
+		request.put("regions", regionid);
+		request.put("user_pmapv_id", pmapvid);
+		*/
                 request.put("command", cmd);
                 request.put("time", System.currentTimeMillis() / 1000);
                 request.put("initiator", "localApp");
-
+                request.put("ordered", 1);
+		        request.put("pmap_id", "7BWzb9_ZRNmbNZe4rkE0fw");
+		        request.put("regions", [{"region_id": "22", "type": "rid"}]; //living room
+	        	request.put("user_pmapv_id", "201006T004121");
+                
                 sendRequest("cmd", request);
             }
         } else if (ch.startsWith(CHANNEL_SCHED_SWITCH_PREFIX)) {
